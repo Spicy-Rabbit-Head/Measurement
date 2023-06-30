@@ -69,7 +69,7 @@ namespace Measurement
         }
 
         // 串口发送
-        private bool SeriaWrite(byte[] chars, int v, int count)
+        private static bool SeriaWrite(byte[] chars, int v, int count)
         {
             try
             {
@@ -85,7 +85,7 @@ namespace Measurement
         }
 
         //校验
-        private string Fcs(string s)
+        private static string Fcs(string s)
         {
             // 提取字节数组
             var b = Encoding.ASCII.GetBytes(s);
@@ -101,7 +101,7 @@ namespace Measurement
         }
 
         //转换16进制并发送
-        private bool Conversion(string s)
+        private static bool Conversion(string s)
         {
             var fcs = Fcs(s);
             if (fcs.Length == 1) s += '0';
@@ -114,7 +114,7 @@ namespace Measurement
         }
 
         // 数据接收
-        private List<string> DataReceived()
+        private static List<string> DataReceived()
         {
             Thread.Sleep(300);
             // 获取缓冲个数
@@ -135,7 +135,7 @@ namespace Measurement
         public bool UpperScrewAction()
         {
             var str = HeadMark + IoWrite + Cio + Word1 + Bit + On;
-            if (Conversion(str))
+            if (!Conversion(str))
             {
                 var result = DataReceived();
                 //if (result[24] == "0")
