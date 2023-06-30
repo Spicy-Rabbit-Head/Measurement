@@ -5,7 +5,7 @@ namespace Measurement
 {
     internal class AccessConnection
     {
-        private OleDbConnection ole;
+        private static OleDbConnection ole;
 
         public bool Change(double num)
         {

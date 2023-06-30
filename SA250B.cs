@@ -14,6 +14,8 @@ namespace Measurement
         // 正则规则
         private static readonly string[] Regular = { "=", "(", "),", ")" };
 
+        private static string strs = "1";
+
         // 自定义公共接口
 
         // 打开250B服务器
@@ -128,6 +130,31 @@ namespace Measurement
             return Task.FromResult<object>(dataList);
         }
 
+        // 设置串口
+        public Task<object> SetSerialPort(string post)
+        {
+            
+            return Task.FromResult<object>(true);
+        }
+
+        // 自动校对机
+        public Task<object> AutomaticProofreadingMachine(object none)
+        {
+            return Task.FromResult<object>(false);
+        }
+
+        // 设置
+        public Task<object> SetText(string str)
+        {
+            strs = str;
+            return Task.FromResult<object>(strs);
+        }
+
+        // 获取
+        public Task<object> GetText(object none)
+        {
+            return Task.FromResult<object>(strs);
+        }
 
         // 250B公共接口
 

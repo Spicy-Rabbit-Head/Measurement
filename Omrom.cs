@@ -14,7 +14,7 @@ namespace Measurement
         // ICF DA2 SA2 SID 
         private readonly string mark = "00000000";
         private const string HeadMark = "@00FA000000000";
-        private SerialPort serialPort;
+        private static SerialPort serialPort;
 
         public void Init()
         {
