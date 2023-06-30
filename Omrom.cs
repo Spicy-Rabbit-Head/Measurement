@@ -14,16 +14,15 @@ namespace Measurement
         // ICF DA2 SA2 SID 
         private readonly string mark = "00000000";
         private const string HeadMark = "@00FA000000000";
-        private static SerialPort serialPort;
+        private static readonly SerialPort SerialPort = new SerialPort();
 
         public void Init()
         {
-            serialPort = new SerialPort();
-            serialPort.BaudRate = 115200;
-            serialPort.DataBits = 8;
-            serialPort.StopBits = StopBits.One;
-            serialPort.Parity = Parity.None;
-            serialPort.ReadBufferSize = 4096;
+            SerialPort.BaudRate = 115200;
+            SerialPort.DataBits = 8;
+            SerialPort.StopBits = StopBits.One;
+            SerialPort.Parity = Parity.None;
+            SerialPort.ReadBufferSize = 4096;
         }
 
         // 操作指令 
@@ -64,9 +63,9 @@ namespace Measurement
         private const string Cr = "*";
 
         //串口名设置
-        public void SetPort(string s)
+        public static void SetPort(string s)
         {
-            serialPort.PortName = s;
+            SerialPort.PortName = s;
         }
 
         // 串口发送
@@ -74,8 +73,8 @@ namespace Measurement
         {
             try
             {
-                serialPort.Open();
-                serialPort.Write(chars, v, count);
+                SerialPort.Open();
+                SerialPort.Write(chars, v, count);
             }
             catch (Exception)
             {
@@ -119,15 +118,15 @@ namespace Measurement
         {
             Thread.Sleep(300);
             // 获取缓冲个数
-            var n = serialPort.BytesToRead;
+            var n = SerialPort.BytesToRead;
             var str = new byte[n];
             //读取
-            serialPort.Read(str, 0, n);
+            SerialPort.Read(str, 0, n);
             var result = new List<string>();
             //转换
             foreach (var b in str) result.Add(((char)b).ToString());
 
-            serialPort.Close();
+            SerialPort.Close();
             return result;
         }
 

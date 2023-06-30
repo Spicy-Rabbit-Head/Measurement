@@ -133,7 +133,15 @@ namespace Measurement
         // 设置串口
         public Task<object> SetSerialPort(string post)
         {
-            
+            try
+            {
+                Omrom.SetPort(post);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(false);
+            }
+
             return Task.FromResult<object>(true);
         }
 
