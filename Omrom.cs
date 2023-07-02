@@ -16,6 +16,7 @@ namespace Measurement
         private const string HeadMark = "@00FA000000000";
         private static readonly SerialPort SerialPort = new SerialPort();
 
+        // 初始化
         public void Init()
         {
             SerialPort.BaudRate = 115200;
