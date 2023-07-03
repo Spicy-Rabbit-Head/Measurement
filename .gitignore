@@ -1,0 +1,10 @@
+﻿### Example user template template
+### Example user template
+
+# Rider project files
+.idea
+.vs
+bin
+obj
+Properties
+

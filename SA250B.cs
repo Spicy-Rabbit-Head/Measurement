@@ -14,9 +14,34 @@ namespace Measurement
         // 正则规则
         private static readonly string[] Regular = { "=", "(", "),", ")" };
 
-        private static string strs = "1";
+        // PLC驱动
+        private Omrom omrom;
+
+        // Access数据库驱动
+        private AccessConnection accessConnection;
 
         // 自定义公共接口
+        public Task<object> Init(object none)
+        {
+            try
+            {
+                omrom = new Omrom();
+                SetSerialPort("233");
+                accessConnection = new AccessConnection();
+            }
+            catch (Exception e)
+            {
+                return Task.FromResult<object>(e);
+            }
+
+            return Task.FromResult<object>("初始化成功");
+        }
+
+        // 
+        public Task<object> GetText(object none)
+        {
+            return Task.FromResult<object>(omrom.GetPort());
+        }
 
         // 打开250B服务器
         public Task<object> OpenMeasuringProgram(object none)
@@ -131,11 +156,11 @@ namespace Measurement
         }
 
         // 设置串口
-        public Task<object> SetSerialPort(string post)
+        private object SetSerialPort(string post)
         {
             try
             {
-                Omrom.SetPort(post);
+                omrom.SetPort(post);
             }
             catch (Exception)
             {
@@ -149,19 +174,6 @@ namespace Measurement
         public Task<object> AutomaticProofreadingMachine(object none)
         {
             return Task.FromResult<object>(false);
-        }
-
-        // 设置
-        public Task<object> SetText(string str)
-        {
-            strs = str;
-            return Task.FromResult<object>(strs);
-        }
-
-        // 获取
-        public Task<object> GetText(object none)
-        {
-            return Task.FromResult<object>(strs);
         }
 
         // 250B公共接口

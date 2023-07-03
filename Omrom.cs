@@ -9,21 +9,21 @@ namespace Measurement
     internal class Omrom
     {
         // Fins 头 节点 固定指令 等待时间 
-        private readonly string head = "@00FA0";
+        private const string Head = "@00FA0";
 
         // ICF DA2 SA2 SID 
-        private readonly string mark = "00000000";
+        private const string Mark = "00000000";
         private const string HeadMark = "@00FA000000000";
-        private static readonly SerialPort SerialPort = new SerialPort();
+        private readonly SerialPort serialPort = new SerialPort();
 
         // 初始化
         public void Init()
         {
-            SerialPort.BaudRate = 115200;
-            SerialPort.DataBits = 8;
-            SerialPort.StopBits = StopBits.One;
-            SerialPort.Parity = Parity.None;
-            SerialPort.ReadBufferSize = 4096;
+            serialPort.BaudRate = 115200;
+            serialPort.DataBits = 8;
+            serialPort.StopBits = StopBits.One;
+            serialPort.Parity = Parity.None;
+            serialPort.ReadBufferSize = 4096;
         }
 
         // 操作指令 
@@ -64,18 +64,24 @@ namespace Measurement
         private const string Cr = "*";
 
         //串口名设置
-        public static void SetPort(string s)
+        public void SetPort(string s)
         {
-            SerialPort.PortName = s;
+            serialPort.PortName = s;
+        }
+
+        // 串口名获取
+        public string GetPort()
+        {
+            return serialPort.PortName;
         }
 
         // 串口发送
-        private static bool SeriaWrite(byte[] chars, int v, int count)
+        private bool SeriaWrite(byte[] chars, int v, int count)
         {
             try
             {
-                SerialPort.Open();
-                SerialPort.Write(chars, v, count);
+                serialPort.Open();
+                serialPort.Write(chars, v, count);
             }
             catch (Exception)
             {
@@ -102,7 +108,7 @@ namespace Measurement
         }
 
         //转换16进制并发送
-        private static bool Conversion(string s)
+        private bool Conversion(string s)
         {
             var fcs = Fcs(s);
             if (fcs.Length == 1) s += '0';
@@ -115,19 +121,19 @@ namespace Measurement
         }
 
         // 数据接收
-        private static List<string> DataReceived()
+        private List<string> DataReceived()
         {
             Thread.Sleep(300);
             // 获取缓冲个数
-            var n = SerialPort.BytesToRead;
+            var n = serialPort.BytesToRead;
             var str = new byte[n];
             //读取
-            SerialPort.Read(str, 0, n);
+            serialPort.Read(str, 0, n);
             var result = new List<string>();
             //转换
             foreach (var b in str) result.Add(((char)b).ToString());
 
-            SerialPort.Close();
+            serialPort.Close();
             return result;
         }
 
