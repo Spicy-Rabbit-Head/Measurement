@@ -15,10 +15,10 @@ namespace Measurement
         private static readonly string[] Regular = { "=", "(", "),", ")" };
 
         // PLC驱动
-        private Omrom omrom;
+        private static Omrom omrom;
 
         // Access数据库驱动
-        private AccessConnection accessConnection;
+        private static AccessConnection accessConnection;
 
         // 自定义公共接口
         public Task<object> Init(object none)
@@ -26,7 +26,6 @@ namespace Measurement
             try
             {
                 omrom = new Omrom();
-                SetSerialPort("233");
                 accessConnection = new AccessConnection();
             }
             catch (Exception e)
@@ -35,12 +34,6 @@ namespace Measurement
             }
 
             return Task.FromResult<object>("初始化成功");
-        }
-
-        // 
-        public Task<object> GetText(object none)
-        {
-            return Task.FromResult<object>(omrom.GetPort());
         }
 
         // 打开250B服务器
@@ -168,6 +161,19 @@ namespace Measurement
             }
 
             return Task.FromResult<object>(true);
+        }
+
+        // 获取串口列表
+        public Task<object> GetSerialPortList(object none)
+        {
+            try
+            {
+                return Task.FromResult<object>(omrom.GetPortList());
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(false);
+            }
         }
 
         // 自动校对机

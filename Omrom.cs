@@ -75,6 +75,12 @@ namespace Measurement
             return serialPort.PortName;
         }
 
+        // 串口列表
+        public string[] GetPortList()
+        {
+            return SerialPort.GetPortNames();
+        }
+
         // 串口发送
         private bool SeriaWrite(byte[] chars, int v, int count)
         {
