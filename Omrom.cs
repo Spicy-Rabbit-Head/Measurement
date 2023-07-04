@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -78,7 +79,22 @@ namespace Measurement
         // 串口列表
         public string[] GetPortList()
         {
-            return SerialPort.GetPortNames();
+            var postList = SerialPort.GetPortNames().OrderBy(SortPort).ToArray();
+            return postList;
+        }
+
+        // 串口数组排序
+        private int SortPort(string port)
+        {
+            // 判断是否为COM开头并且解析字符串3位后的数字
+            if (port.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && int.TryParse(port.Substring(3), out var n))
+            {
+                // 是数字则返回数字
+                return n;
+            }
+
+            // 否则返回0
+            return 0;
         }
 
         // 串口发送
