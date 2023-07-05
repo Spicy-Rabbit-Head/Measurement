@@ -79,8 +79,7 @@ namespace Measurement
         // 串口列表
         public string[] GetPortList()
         {
-            var postList = SerialPort.GetPortNames().OrderBy(SortPort).ToArray();
-            return postList;
+            return SerialPort.GetPortNames().OrderBy(SortPort).ToArray();
         }
 
         // 串口数组排序
