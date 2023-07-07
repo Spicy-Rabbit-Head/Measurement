@@ -27,6 +27,7 @@ namespace Measurement
             {
                 omrom = new Omrom();
                 accessConnection = new AccessConnection();
+                accessConnection.Init();
             }
             catch (Exception e)
             {
@@ -174,6 +175,12 @@ namespace Measurement
             {
                 return Task.FromResult<object>(false);
             }
+        }
+
+        // 查询标品状态
+        public Task<object> GetStandardProductData(dynamic data)
+        {
+            return Task.FromResult<object>(accessConnection.GetStandard(data));
         }
 
         // 自动校对机
