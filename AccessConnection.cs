@@ -67,7 +67,12 @@ namespace Measurement
                 ole.Close();
                 if (dataTable.Rows.Count == 0) return null;
                 var datas = new List<StandardData>();
-                for (var i = 0; i < dataTable.Rows.Count; i++) datas.Add(new StandardData(dataTable.Rows[i][1].ToString(), dataTable.Rows[i][11].ToString()));
+                for (var i = 0; i < dataTable.Rows.Count; i++)
+                {
+                    var num = double.Parse(dataTable.Rows[i][11].ToString()).ToString("F");
+                    datas.Add(new StandardData(dataTable.Rows[i][1].ToString(), num));
+                }
+
                 return datas;
             }
             catch (Exception e)
