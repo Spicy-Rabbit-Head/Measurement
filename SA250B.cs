@@ -20,6 +20,9 @@ namespace Measurement
         // Access数据库驱动
         private static AccessConnection accessConnection;
 
+        // 250BPort
+        private static int port = 1;
+
         // 自定义公共接口
         public Task<object> Init(object none)
         {
@@ -183,10 +186,40 @@ namespace Measurement
             return Task.FromResult<object>(accessConnection.GetStandard(data));
         }
 
-        // 自动校对机
-        public Task<object> AutomaticProofreadingMachine(object none)
+        // 校机
+        public async Task<object> Proofreading(dynamic data)
         {
-            return Task.FromResult<object>(false);
+            try
+            {
+                var steps = (int)data.steps;
+                var portIndex = (int)data.portIndex;
+                var fixture = (string)data.fixture;
+                return await Task.FromResult<object>(CalibrateDivider(steps, portIndex, fixture));
+            }
+            catch (Exception e)
+            {
+                return Task.FromResult<object>(e);
+            }
+        }
+
+        // 校准分压
+        private static string CalibrateDivider(int steps, int portIndex, string fixture)
+        {
+            var success = 0;
+            switch (steps)
+            {
+                case 0:
+                    CalibrateShortB(port, portIndex, fixture, ref success);
+                    break;
+                case 1:
+                    CalibrateLoadB(port, portIndex, fixture, ref success);
+                    break;
+                case 2:
+                    CalibrateOpenB(port, portIndex, fixture, ref success);
+                    break;
+            }
+
+            return success != 0 ? "校准成功" : "校准失败";
         }
 
         // 250B公共接口
