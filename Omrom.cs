@@ -18,13 +18,14 @@ namespace Measurement
         private readonly SerialPort serialPort = new SerialPort();
 
         // 初始化
-        public void Init()
+        public void Init(string port)
         {
             serialPort.BaudRate = 115200;
             serialPort.DataBits = 8;
             serialPort.StopBits = StopBits.One;
             serialPort.Parity = Parity.None;
             serialPort.ReadBufferSize = 4096;
+            serialPort.PortName = port;
         }
 
         // 操作指令 
@@ -87,10 +88,8 @@ namespace Measurement
         {
             // 判断是否为COM开头并且解析字符串3位后的数字
             if (port.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && int.TryParse(port.Substring(3), out var n))
-            {
                 // 是数字则返回数字
                 return n;
-            }
 
             // 否则返回0
             return 0;

@@ -21,15 +21,16 @@ namespace Measurement
         private static AccessConnection accessConnection;
 
         // 250BPort
-        private static int port = 1;
+        private const int Port = 1;
 
         // 自定义公共接口
-        public Task<object> Init(object none)
+        public Task<object> Init(string port)
         {
             try
             {
                 omrom = new Omrom();
                 accessConnection = new AccessConnection();
+                omrom.Init(port);
                 accessConnection.Init();
             }
             catch (Exception e)
@@ -56,7 +57,7 @@ namespace Measurement
         }
 
         // 关闭250B服务器
-        public Task<object> CloseMeasuringProgram(string input)
+        public Task<object> CloseMeasuringProgram(object none)
         {
             try
             {
@@ -132,7 +133,7 @@ namespace Measurement
         }
 
         // 一组测试并返回数据
-        public Task<object> GroupTest()
+        public Task<object> GroupTest(object none)
         {
             var dataList = new List<object>(4);
             try
@@ -153,7 +154,7 @@ namespace Measurement
         }
 
         // 设置串口
-        private object SetSerialPort(string post)
+        public Task<object> SetSerialPort(string post)
         {
             try
             {
@@ -165,6 +166,19 @@ namespace Measurement
             }
 
             return Task.FromResult<object>(true);
+        }
+
+        // 获取串口
+        public Task<object> GetSerialPort(object none)
+        {
+            try
+            {
+                return Task.FromResult<object>(omrom.GetPort());
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(null);
+            }
         }
 
         // 获取串口列表
@@ -187,14 +201,14 @@ namespace Measurement
         }
 
         // 校机
-        public async Task<object> Proofreading(dynamic data)
+        public Task<object> Proofreading(dynamic data)
         {
             try
             {
                 var steps = (int)data.steps;
                 var portIndex = (int)data.portIndex;
                 var fixture = (string)data.fixture;
-                return await Task.FromResult<object>(CalibrateDivider(steps, portIndex, fixture));
+                return Task.FromResult<object>(CalibrateDivider(steps, portIndex, fixture));
             }
             catch (Exception e)
             {
@@ -209,13 +223,13 @@ namespace Measurement
             switch (steps)
             {
                 case 0:
-                    CalibrateShortB(port, portIndex, fixture, ref success);
+                    CalibrateShortB(Port, portIndex, fixture, ref success);
                     break;
                 case 1:
-                    CalibrateLoadB(port, portIndex, fixture, ref success);
+                    CalibrateLoadB(Port, portIndex, fixture, ref success);
                     break;
                 case 2:
-                    CalibrateOpenB(port, portIndex, fixture, ref success);
+                    CalibrateOpenB(Port, portIndex, fixture, ref success);
                     break;
             }
 
