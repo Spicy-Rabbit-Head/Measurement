@@ -200,6 +200,13 @@ namespace Measurement
             return Task.FromResult<object>(accessConnection.GetStandard(data));
         }
 
+        // 上丝杆动作
+        public Task<object> ScrewAction(int i)
+        {
+            var type = i == 0 ? omrom.UpperScrewAction() : omrom.LowerScrewAction();
+            return Task.FromResult<object>(type);
+        }
+
         // 校机
         public Task<object> Proofreading(dynamic data)
         {
@@ -212,12 +219,12 @@ namespace Measurement
             }
             catch (Exception e)
             {
-                return Task.FromResult<object>(e);
+                return Task.FromResult<object>(false);
             }
         }
 
         // 校准分压
-        private static string CalibrateDivider(int steps, int portIndex, string fixture)
+        private static bool CalibrateDivider(int steps, int portIndex, string fixture)
         {
             var success = 0;
             switch (steps)
@@ -233,8 +240,9 @@ namespace Measurement
                     break;
             }
 
-            return success != 0 ? "校准成功" : "校准失败";
+            return success != 0;
         }
+
 
         // 250B公共接口
 

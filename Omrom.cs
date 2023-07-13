@@ -143,7 +143,7 @@ namespace Measurement
         // 数据接收
         private List<string> DataReceived()
         {
-            Thread.Sleep(300);
+            Thread.Sleep(100);
             // 获取缓冲个数
             var n = serialPort.BytesToRead;
             var str = new byte[n];
@@ -172,7 +172,6 @@ namespace Measurement
                 //return false;
                 return true;
             }
-
             return false;
             // @00FA00400000000102000040*\CR
         }
