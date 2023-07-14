@@ -143,6 +143,7 @@ namespace Measurement
         // 数据接收
         private List<string> DataReceived()
         {
+            Thread.Sleep(200);
             // 获取缓冲个数
             var n = serialPort.BytesToRead;
             var str = new byte[n];
@@ -161,7 +162,7 @@ namespace Measurement
         public bool UpperScrewAction()
         {
             var str = HeadMark + IoWrite + Cio + Word1 + Bit + On;
-            if (!Conversion(str))
+            if (Conversion(str))
             {
                 var result = DataReceived();
                 //if (result[24] == "0")
@@ -171,6 +172,7 @@ namespace Measurement
                 //return false;
                 return true;
             }
+
             return false;
             // @00FA00400000000102000040*\CR
         }
