@@ -200,11 +200,15 @@ namespace Measurement
             return Task.FromResult<object>(accessConnection.GetStandard(data));
         }
 
-        // 上丝杆动作
+        // 丝杆动作
         public Task<object> ScrewAction(int i)
         {
-            var type = i == 0 ? omrom.UpperScrewAction() : omrom.LowerScrewAction();
-            return Task.FromResult<object>(type);
+            if (i == 0)
+                omrom.UpperScrewAction();
+            else
+                omrom.LowerScrewAction();
+
+            return Task.FromResult<object>(true);
         }
 
         // 校机

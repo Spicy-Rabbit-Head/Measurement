@@ -143,7 +143,6 @@ namespace Measurement
         // 数据接收
         private List<string> DataReceived()
         {
-            Thread.Sleep(100);
             // 获取缓冲个数
             var n = serialPort.BytesToRead;
             var str = new byte[n];
