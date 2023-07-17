@@ -104,17 +104,20 @@ namespace Measurement
         // 测试数据
         private static string MeasurementData()
         {
-            string result = null;
+            string results = null;
             try
             {
-                var getResults = "";
-                MeasureAndGetResultsB(1, ref getResults);
-                var str = getResults.Split(Regular, StringSplitOptions.RemoveEmptyEntries);
+                var result1 = "";
+                var result2 = "";
+                var result3 = "";
+                var result4 = "";
+                MeasureAndGetResultsB(1, ref result1, 0, ref result2, 0, ref result3, 0, ref result4);
+                var str = result1.Split(Regular, StringSplitOptions.RemoveEmptyEntries);
                 for (var i = 0; i < str.Length / 3; i++)
                 {
                     var index = i * 3;
                     if (str[index] != "FL") continue;
-                    result = str[index + 1];
+                    results = str[index + 1];
                 }
             }
             catch (Exception)
@@ -122,7 +125,7 @@ namespace Measurement
                 return null;
             }
 
-            return result;
+            return results;
         }
 
         // 一次测试并返回数据
@@ -133,21 +136,21 @@ namespace Measurement
         }
 
         // 一组测试并返回数据
-        public Task<object> GroupTest(object none)
+        public Task<object> TestOneGroup(object none)
         {
-            var dataList = new List<object>(4);
+            var dataList = new List<string>(4);
             try
             {
                 for (var i = 0; i < 4; i++)
                 {
                     var data = MeasurementData();
-                    if (string.IsNullOrEmpty(data)) return Task.FromResult<object>(false);
+                    if (string.IsNullOrEmpty(data)) return Task.FromResult<object>(null);
                     dataList.Add(data);
                 }
             }
             catch (Exception)
             {
-                return Task.FromResult<object>(false);
+                return Task.FromResult<object>(null);
             }
 
             return Task.FromResult<object>(dataList);
@@ -300,13 +303,13 @@ namespace Measurement
 
         // 测量并返回数据
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults, ref string pbstr250B1Results);
+        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults, [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B1Results);
 
         // 测量并返回数据-指定250B
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults, ref string pbstr250B1Results, int nMeasure250B2AndGetResults,
-            ref string pbstr250B2Results, int nMeasure250B3AndGetResults, ref string pbstr250B3Results, int nMeasure250B4AndGetResults,
-            ref string pbstr250B4Results);
+        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults, [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B1Results, int nMeasure250B2AndGetResults,
+            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B2Results, int nMeasure250B3AndGetResults, [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B3Results, int nMeasure250B4AndGetResults,
+            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B4Results);
 
         // .............................
 
