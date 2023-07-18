@@ -250,7 +250,19 @@ namespace Measurement
             return success != 0;
         }
 
-
+        // 写入标品补偿值
+        public Task<object> WriteStandardProduct(string[] data)
+        {
+            try
+            {
+                return Task.FromResult<object>(accessConnection.AllChange(data));
+            }
+            catch (Exception e)
+            {
+                return Task.FromResult<object>(null);
+            }
+        }
+        
         // 250B公共接口
 
         // 启动250B服务器

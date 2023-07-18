@@ -30,20 +30,21 @@ namespace Measurement
         }
 
         // 改变所有补正值
-        public bool AllChange(double[] dos)
+        public bool AllChange(string[] dos)
         {
             var i = 0;
             try
             {
                 ole.Open();
                 var sql =
-                    $"update Setup set strPortFrequencyOffsets='{dos[0].ToString(CultureInfo.InvariantCulture)},{dos[1].ToString(CultureInfo.InvariantCulture)},{dos[2].ToString(CultureInfo.InvariantCulture)},{dos[3].ToString(CultureInfo.InvariantCulture)}';";
+                    $"update Setup set strPortFrequencyOffsets='{dos[0]},{dos[1]},{dos[2]},{dos[3]}';";
                 var oleDbCommand = new OleDbCommand(sql, ole);
                 i = oleDbCommand.ExecuteNonQuery();
                 ole.Close();
             }
             catch (Exception e)
             {
+                ole.Close();
                 return false;
             }
 
