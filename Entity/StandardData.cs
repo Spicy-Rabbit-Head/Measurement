@@ -1,4 +1,4 @@
-﻿namespace Measurement
+﻿namespace Measurement.Entity
 {
     public class StandardData
     {

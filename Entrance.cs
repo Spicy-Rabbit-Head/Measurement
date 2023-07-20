@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Measurement.Access;
+using Measurement.FinsSerialPort;
 
 namespace Measurement
 {
-    public class Sa250B
+    public class Entrance
     {
         // 成员变量
         // 250B接口地址
@@ -262,7 +264,7 @@ namespace Measurement
                 return Task.FromResult<object>(null);
             }
         }
-        
+
         // 250B公共接口
 
         // 启动250B服务器

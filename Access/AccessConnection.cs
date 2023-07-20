@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Globalization;
+using Measurement.Entity;
 
-namespace Measurement
+namespace Measurement.Access
 {
     internal class AccessConnection
     {

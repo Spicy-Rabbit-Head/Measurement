@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Measurement
+namespace Measurement.FinsSerialPort
 {
     internal class Omrom
     {
