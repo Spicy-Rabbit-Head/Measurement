@@ -70,13 +70,16 @@
         <Compile Include="Entity\StandardData.cs" />
         <Compile Include="Entrance.cs" />
         <Compile Include="FinsSerialPort\Omrom.cs" />
+        <Compile Include="FinsTcp\BasicClass.cs" />
+        <Compile Include="FinsTcp\ConvertClass.cs" />
+        <Compile Include="FinsTcp\EnumClass.cs" />
+        <Compile Include="FinsTcp\ErrorCode.cs" />
+        <Compile Include="FinsTcp\EtherNetTcp.cs" />
+        <Compile Include="FinsTcp\FinsClass.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
         <Content Include=".gitignore" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="FinsTcp\" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

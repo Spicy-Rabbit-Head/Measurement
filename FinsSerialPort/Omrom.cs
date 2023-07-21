@@ -36,13 +36,13 @@ namespace Measurement.FinsSerialPort
         private const string IoWrite = "0102";
 
         // 存储器
-        // Cio Bit
+        // Cio BIT
         private const string Cio = "30";
 
-        // W Bit
+        // W BIT
         private const string W = "31";
 
-        // Word 地址
+        // WORD 地址
         // 上
         private const string Word1 = "000008";
 
@@ -88,6 +88,7 @@ namespace Measurement.FinsSerialPort
         {
             // 判断是否为COM开头并且解析字符串3位后的数字
             if (port.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && int.TryParse(port.Substring(3), out var n))
+
                 // 是数字则返回数字
                 return n;
 
@@ -116,10 +117,13 @@ namespace Measurement.FinsSerialPort
         {
             // 提取字节数组
             var b = Encoding.ASCII.GetBytes(s);
+
             // xor 存放校验结果 初值去首元素值
             var xorResult = b[0];
+
             // 求xor校验和 从第二位开始
             for (var i = 1; i < b.Length; i++)
+
                 //进行异或运算
                 xorResult ^= b[i];
 
@@ -144,12 +148,15 @@ namespace Measurement.FinsSerialPort
         private List<string> DataReceived()
         {
             Thread.Sleep(200);
+
             // 获取缓冲个数
             var n = serialPort.BytesToRead;
             var str = new byte[n];
+
             //读取
             serialPort.Read(str, 0, n);
             var result = new List<string>();
+
             //转换
             foreach (var b in str) result.Add(((char)b).ToString());
 
@@ -165,6 +172,7 @@ namespace Measurement.FinsSerialPort
             if (Conversion(str))
             {
                 var result = DataReceived();
+
                 //if (result[24] == "0")
                 //{
                 //    return true;
@@ -174,6 +182,7 @@ namespace Measurement.FinsSerialPort
             }
 
             return false;
+
             // @00FA00400000000102000040*\CR
         }
 
@@ -184,6 +193,7 @@ namespace Measurement.FinsSerialPort
             if (Conversion(str))
             {
                 var result = DataReceived();
+
                 //if (result[24] == "0")
                 //{
                 //    return true;
@@ -193,6 +203,7 @@ namespace Measurement.FinsSerialPort
             }
 
             return false;
+
             // @00FA00400000000102000040*\CR
         }
 
@@ -203,6 +214,7 @@ namespace Measurement.FinsSerialPort
             if (Conversion(str))
             {
                 var result = DataReceived();
+
                 //if (result[24] == "1")
                 //{
                 //    return true;
@@ -212,6 +224,7 @@ namespace Measurement.FinsSerialPort
             }
 
             return false;
+
             // on  @00FA0040000000010100000142*\CR
             // off @00FA0040000000010100000043*\CR
         }
@@ -223,6 +236,7 @@ namespace Measurement.FinsSerialPort
             if (Conversion(str))
             {
                 var result = DataReceived();
+
                 //   if (result[24] == "1")
                 //{
                 //    return true;
@@ -232,6 +246,7 @@ namespace Measurement.FinsSerialPort
             }
 
             return false;
+
             // on  @00FA0040000000010100000142*\CR
             // off @00FA0040000000010100000043*\CR
         }

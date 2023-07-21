@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Measurement.Access;
 using Measurement.FinsSerialPort;
+using Measurement.FinsTcp;
 
 namespace Measurement
 {
@@ -25,6 +27,8 @@ namespace Measurement
         // 250BPort
         private const int Port = 1;
 
+        private static EtherNetTcp ent;
+
         // 自定义公共接口
         public Task<object> Init(string port)
         {
@@ -34,6 +38,8 @@ namespace Measurement
                 accessConnection = new AccessConnection();
                 omrom.Init(port);
                 accessConnection.Init();
+                ent = new EtherNetTcp();
+                ent.Link("150.110.60.6", 9600);
             }
             catch (Exception e)
             {
@@ -209,11 +215,38 @@ namespace Measurement
         public Task<object> ScrewAction(int i)
         {
             if (i == 0)
-                omrom.UpperScrewAction();
+                ent.SetBitState("I0.08", BitState.ON);
             else
-                omrom.LowerScrewAction();
+                ent.SetBitState("W0.04", BitState.ON);
 
+            Thread.Sleep(200);
             return Task.FromResult<object>(true);
+        }
+
+        // 获取丝杆状态
+        public Task<object> GetScrewState(int i)
+        {
+            Thread.Sleep(50);
+            if (i == 0)
+            {
+                ent.GetBitState("I0.07", out short state);
+                if (state == 1)
+                {
+                    return Task.FromResult<object>(true);
+                }
+
+                return Task.FromResult<object>(false);
+            }
+            else
+            {
+                ent.GetBitState("I0.10", out short state);
+                if (state == 1)
+                {
+                    return Task.FromResult<object>(true);
+                }
+
+                return Task.FromResult<object>(false);
+            }
         }
 
         // 校机
