@@ -592,6 +592,7 @@ namespace Measurement.FinsTcp
         private short WriteWords(PlcMemory mr, short ch, short cnt, short[] inData)
         {
             var buffer = new byte[30];
+
             // 前34字节和读指令基本一直，还需要拼接下面的输入数据数组
             var arrayhead = FinsCmd(RorW.WRITE, mr, MemoryType.WORD, ch, 00, cnt);
             var wdata = new byte[(cnt * 2)];
@@ -600,6 +601,7 @@ namespace Measurement.FinsTcp
             for (var i = 0; i < cnt; i++)
             {
                 var temp = BitConverter.GetBytes(inData[i]);
+
                 // 转换为PLC的高位在前储存方式
                 wdata[i * 2] = temp[1];
                 wdata[i * 2 + 1] = temp[0];
@@ -611,13 +613,16 @@ namespace Measurement.FinsTcp
             wdata.CopyTo(array, 34);
             if (SendData(array) != 0) return -1;
             if (ReceiveData(buffer) != 0) return -1;
+
             // 命令返回成功，继续查询是否有错误码，然后在读取数据
             var succeed = true;
             if (buffer[11] == 3)
                 succeed = ErrorCode.CheckHeadError(buffer[15]);
             if (!succeed) return -1;
+
             // endcode为fins指令的返回错误码
             if (ErrorCode.CheckEndCode(buffer[28], buffer[29]))
+
                 // 完全正确的返回0
                 return 0;
             return -1;
@@ -642,7 +647,7 @@ namespace Measurement.FinsTcp
         /// <param name="ch">地址</param>
         /// <param name="inData">写入数据</param>
         /// <returns>0为成功</returns>
-        private short WriteWord(PlcMemory mr, short ch, short inData)
+        public short WriteWord(PlcMemory mr, short ch, short inData)
         {
             var temp = new[] { inData };
             var re = WriteWords(mr, ch, 1, temp);
@@ -693,13 +698,16 @@ namespace Measurement.FinsTcp
             var array = FinsCmd(RorW.READ, mr, MemoryType.BIT, cnInt, cnBit, cnt);
             if (SendData(array) != 0) return -1;
             if (ReceiveData(buffer) != 0) return -1;
+
             // 命令返回成功，继续查询是否有错误码，然后在读取数据
             var succeed = true;
             if (buffer[11] == 3)
                 succeed = ErrorCode.CheckHeadError(buffer[15]);
             if (!succeed) return -1;
+
             // endcode为fins指令的返回错误码
             if (!ErrorCode.CheckEndCode(buffer[28], buffer[29])) return -1;
+
             // 完全正确的返回，开始读取返回的具体数值
             for (var i = 0; i < cnt; i++) bs[i] = buffer[30 + i] == 1;
 
@@ -722,13 +730,16 @@ namespace Measurement.FinsTcp
             var array = FinsCmd(RorW.READ, mr, MemoryType.BIT, cnInt, cnBit, 1);
             if (SendData(array) != 0) return -1;
             if (ReceiveData(buffer) != 0) return -1;
+
             // 命令返回成功，继续查询是否有错误码，然后在读取数据
             var succeed = true;
             if (buffer[11] == 3)
                 succeed = ErrorCode.CheckHeadError(buffer[15]);
             if (!succeed) return -1;
+
             // endcode为fins指令的返回错误码
             if (!ErrorCode.CheckEndCode(buffer[28], buffer[29])) return -1;
+
             // 完全正确的返回，开始读取返回的具体数值
             bs = buffer[30];
             return 0;
@@ -764,6 +775,7 @@ namespace Measurement.FinsTcp
             array[34] = (byte)bs;
             if (SendData(array) != 0) return -1;
             if (ReceiveData(buffer) != 0) return -1;
+
             // 命令返回成功，继续查询是否有错误码，然后在读取数据
             var succeed = true;
             if (buffer[11] == 3)
@@ -772,6 +784,7 @@ namespace Measurement.FinsTcp
 
             // endcode为fins指令的返回错误码
             if (ErrorCode.CheckEndCode(buffer[28], buffer[29]))
+
                 // 完全正确的返回0
                 return 0;
             return -1;
@@ -804,13 +817,16 @@ namespace Measurement.FinsTcp
             var array = FinsCmd(RorW.READ, mr, MemoryType.WORD, ch, 00, 2);
             if (SendData(array) != 0) return -1;
             if (ReceiveData(buffer) == 0) return -1;
+
             // 命令返回成功，继续查询是否有错误码，然后在读取数据
             var succeed = true;
             if (buffer[11] == 3)
                 succeed = ErrorCode.CheckHeadError(buffer[15]);
             if (!succeed) return -1;
+
             // endcode为fins指令的返回错误码
             if (!ErrorCode.CheckEndCode(buffer[28], buffer[29])) return -1;
+
             // 完全正确的返回，开始读取返回的具体数值
             var temp = new[] { buffer[30 + 1], buffer[30], buffer[30 + 3], buffer[30 + 2] };
             reData = BitConverter.ToSingle(temp, 0);
@@ -841,6 +857,7 @@ namespace Measurement.FinsTcp
             var temp = BitConverter.GetBytes(reData);
 
             var wdata = new short[] { 0, 0 };
+
             // TODO 待定
             if (temp.Length != 0)
                 wdata[0] = BitConverter.ToInt16(temp, 0);
@@ -885,6 +902,7 @@ namespace Measurement.FinsTcp
             if (buffer[11] == 3)
                 succeed = ErrorCode.CheckHeadError(buffer[15]);
             if (!succeed) return -1;
+
             // endcode为fins指令的返回错误码
             if (!ErrorCode.CheckEndCode(buffer[28], buffer[29])) return -1;
 
@@ -918,6 +936,7 @@ namespace Measurement.FinsTcp
             var temp = BitConverter.GetBytes(reData);
 
             var wdata = new short[] { 0, 0 };
+
             // TODO 待定
             if (temp.Length != 0)
                 wdata[0] = BitConverter.ToInt16(temp, 0);

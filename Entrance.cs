@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Measurement.Access;
-using Measurement.FinsSerialPort;
 using Measurement.FinsTcp;
 
 namespace Measurement
@@ -19,7 +18,7 @@ namespace Measurement
         private static readonly string[] Regular = { "=", "(", "),", ")" };
 
         // PLC驱动
-        private static Omrom omrom;
+        // private static Omrom omrom;
 
         // Access数据库驱动
         private static AccessConnection accessConnection;
@@ -27,6 +26,7 @@ namespace Measurement
         // 250BPort
         private const int Port = 1;
 
+        // PLC驱动
         private static EtherNetTcp ent;
 
         // 自定义公共接口
@@ -34,9 +34,10 @@ namespace Measurement
         {
             try
             {
-                omrom = new Omrom();
+                // omrom = new Omrom();
                 accessConnection = new AccessConnection();
-                omrom.Init(port);
+
+                // omrom.Init(port);
                 accessConnection.Init();
                 ent = new EtherNetTcp();
                 ent.Link("150.110.60.6", 9600);
@@ -70,6 +71,7 @@ namespace Measurement
             try
             {
                 DisconnectFromServer();
+                ent.Close();
             }
             catch (Exception)
             {
@@ -169,7 +171,7 @@ namespace Measurement
         {
             try
             {
-                omrom.SetPort(post);
+                // omrom.SetPort(post);
             }
             catch (Exception)
             {
@@ -184,7 +186,8 @@ namespace Measurement
         {
             try
             {
-                return Task.FromResult<object>(omrom.GetPort());
+                // return Task.FromResult<object>(omrom.GetPort());
+                return Task.FromResult<object>(null);
             }
             catch (Exception)
             {
@@ -197,7 +200,8 @@ namespace Measurement
         {
             try
             {
-                return Task.FromResult<object>(omrom.GetPortList());
+                // return Task.FromResult<object>(omrom.GetPortList());
+                return Task.FromResult<object>(null);
             }
             catch (Exception)
             {
@@ -229,23 +233,13 @@ namespace Measurement
             Thread.Sleep(50);
             if (i == 0)
             {
-                ent.GetBitState("I0.07", out short state);
-                if (state == 1)
-                {
-                    return Task.FromResult<object>(true);
-                }
-
-                return Task.FromResult<object>(false);
+                ent.GetBitState("I0.07", out var state);
+                return Task.FromResult<object>(state == 1);
             }
             else
             {
-                ent.GetBitState("I0.10", out short state);
-                if (state == 1)
-                {
-                    return Task.FromResult<object>(true);
-                }
-
-                return Task.FromResult<object>(false);
+                ent.GetBitState("I0.10", out var state);
+                return Task.FromResult<object>(state == 1);
             }
         }
 
@@ -259,7 +253,7 @@ namespace Measurement
                 var fixture = (string)data.fixture;
                 return Task.FromResult<object>(CalibrateDivider(steps, portIndex, fixture));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Task.FromResult<object>(false);
             }
@@ -292,11 +286,153 @@ namespace Measurement
             {
                 return Task.FromResult<object>(accessConnection.AllChange(data));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Task.FromResult<object>(null);
             }
         }
+
+        // 设置运行模式
+        public Task<object> SetRunMode(int mode)
+        {
+            try
+            {
+                switch (mode)
+                {
+                    // 手动模式
+                    case 0:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 1);
+                        break;
+
+                    // 自动模式
+                    case 1:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 2);
+                        break;
+
+                    // 校机模式
+                    case 2:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 4);
+                        break;
+
+                    // 对机模式
+                    case 3:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 8);
+                        break;
+
+                    // 调试模式
+                    case 4:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 16);
+                        break;
+                }
+
+                return Task.FromResult<object>(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 测试头位置
+        public Task<object> TestHeadPosition(int i)
+        {
+            try
+            {
+                switch (i)
+                {
+                    // 测试头间距移动
+                    case 0:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 65);
+                        break;
+
+                    // 测试头气缸下降
+                    case 1:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 129);
+                        break;
+
+                    // 测试头气缸上升
+                    case 2:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 257);
+                        break;
+
+                    // 回原点
+                    case 3:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 513);
+                        break;
+                }
+
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+
+        // 手动控制
+        public Task<object> ManualControl(int i)
+        {
+            try
+            {
+                switch (i)
+                {
+                    // 准备位置0
+                    case 0:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 1);
+                        break;
+
+                    // 准备位置1
+                    case 1:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 2);
+                        break;
+
+                    // 准备位置2
+                    case 2:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 4);
+                        break;
+
+                    // 准备位置3
+                    case 3:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 8);
+                        break;
+
+                    // 准备位置4
+                    case 4:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 16);
+                        break;
+
+                    // 准备位置5
+                    case 5:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 32);
+                        break;
+
+                    // 准备位置6
+                    case 6:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 64);
+                        break;
+
+                    // 校机位置
+                    case 7:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 256);
+                        break;
+
+                    // 对机位置
+                    case 8:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 512);
+                        break;
+                }
+
+                ent.WriteWord(PlcMemory.CIO, 4603, 0);
+
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
 
         // 250B公共接口
 
@@ -318,7 +454,8 @@ namespace Measurement
 
         // 单次测试-指定250B
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int Measure(int nMeasure250B1, int nMeasure250B2, int nMeasure250B3, int nMeasure250B4, ref int pn250BsTriggered);
+        private static extern int Measure(int nMeasure250B1, int nMeasure250B2, int nMeasure250B3, int nMeasure250B4,
+            ref int pn250BsTriggered);
 
         // 校准短路界面
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
@@ -350,12 +487,15 @@ namespace Measurement
 
         // 测量并返回数据
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults, [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B1Results);
+        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults,
+            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B1Results);
 
         // 测量并返回数据-指定250B
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults, [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B1Results, int nMeasure250B2AndGetResults,
-            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B2Results, int nMeasure250B3AndGetResults, [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B3Results, int nMeasure250B4AndGetResults,
+        private static extern int MeasureAndGetResultsB(int nMeasure250B1AndGetResults,
+            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B1Results, int nMeasure250B2AndGetResults,
+            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B2Results, int nMeasure250B3AndGetResults,
+            [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B3Results, int nMeasure250B4AndGetResults,
             [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B4Results);
 
         // .............................
@@ -379,11 +519,13 @@ namespace Measurement
         public static extern int CreateDLDSweep(ref int pnDLDSweepID, int nSweeps, double fResistance);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int DefineDLDSweepB(int nDLDSweepID, int nSweepIndex, double fBeginPower, string bstrBeginPowerUnit, double fEndPower,
+        private static extern int DefineDLDSweepB(int nDLDSweepID, int nSweepIndex, double fBeginPower,
+            string bstrBeginPowerUnit, double fEndPower,
             string bstrEndPowerUnit, int nSteps, double fDelay, int nAverages);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int DefineDLDSweepC(int nDLDSweepID, int nSweepIndex, double fBeginPower, string strBeginPowerUnit, double fEndPower,
+        private static extern int DefineDLDSweepC(int nDLDSweepID, int nSweepIndex, double fBeginPower,
+            string strBeginPowerUnit, double fEndPower,
             string strEndPowerUnit, int nSteps, double fDelay, int nAverages);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
@@ -402,11 +544,13 @@ namespace Measurement
         public static extern int Get250BRevision(ref double pfRevision);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int GetBinNumber(int nGet250B1Bin, ref int pn250B1Bin, int nGet250B2Bin, ref int pn250B2Bin, int nGet250B3Bin, ref int pn250B3Bin,
+        public static extern int GetBinNumber(int nGet250B1Bin, ref int pn250B1Bin, int nGet250B2Bin,
+            ref int pn250B2Bin, int nGet250B3Bin, ref int pn250B3Bin,
             int nGet250B4Bin, ref int pn250B4Bin);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int GetDLDResults(ref int pnDLDResultsID, int nGet250B1DLDResults, int nGet250B2DLDResults, int nGet250B3DLDResults,
+        public static extern int GetDLDResults(ref int pnDLDResultsID, int nGet250B1DLDResults, int nGet250B2DLDResults,
+            int nGet250B3DLDResults,
             int nGet250B4DLDResults);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
@@ -428,15 +572,18 @@ namespace Measurement
         private static extern int GetReferenceStandardStatusC(ref string pstrReferenceStandardStatus);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int GetResultsB(int nGet250B1Results, ref string pbstr250B1Results, int nGet250B2Results, ref string pbstr250B2Results,
+        private static extern int GetResultsB(int nGet250B1Results, ref string pbstr250B1Results, int nGet250B2Results,
+            ref string pbstr250B2Results,
             int nGet250B3Results, ref string pbstr250B3Results, int nGet250B4Results, ref string pbstr250B4Results);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int GetResultsC(int nGet250B1Results, ref string pstr250B1Results, int nGet250B2Results, ref string pstr250B2Results,
+        private static extern int GetResultsC(int nGet250B1Results, ref string pstr250B1Results, int nGet250B2Results,
+            ref string pstr250B2Results,
             int nGet250B3Results, ref string pstr250B3Results, int nGet250B4Results, ref string pstr250B4Results);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int GetSpurResults(ref int pnSpurResultsID, int nGet250B1SpurResults, int nGet250B2SpurResults, int nGet250B3SpurResults,
+        public static extern int GetSpurResults(ref int pnSpurResultsID, int nGet250B1SpurResults,
+            int nGet250B2SpurResults, int nGet250B3SpurResults,
             int nGet250B4SpurResults);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
@@ -458,53 +605,76 @@ namespace Measurement
         public static extern int LockUserMode(int nLock);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int MeasureAndGetBinNumber(int nMeasureAndGet250B1Bin, ref int pn250B1Bin, int nMeasureAndGet250B2Bin, ref int pn250B2Bin,
+        public static extern int MeasureAndGetBinNumber(int nMeasureAndGet250B1Bin, ref int pn250B1Bin,
+            int nMeasureAndGet250B2Bin, ref int pn250B2Bin,
             int nMeasureAndGet250B3Bin, ref int pn250B3Bin, int nMeasureAndGet250B4Bin, ref int pn250B4Bin);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int MeasureAndGetResultsC(int nMeasure250B1AndGetResults, ref string pstr250B1Results, int nMeasure250B2AndGetResults,
-            ref string pstr250B2Results, int nMeasure250B3AndGetResults, ref string pstr250B3Results, int nMeasure250B4AndGetResults,
+        private static extern int MeasureAndGetResultsC(int nMeasure250B1AndGetResults, ref string pstr250B1Results,
+            int nMeasure250B2AndGetResults,
+            ref string pstr250B2Results, int nMeasure250B3AndGetResults, ref string pstr250B3Results,
+            int nMeasure250B4AndGetResults,
             ref string pstr250B4Results);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int MeasureRaw(int nAverages, int nMeasure250B1, double f250B1Frequency, double f250B1dBm, ref double pf250B1dB,
-            ref double pf250B1Phase, int nMeasure250B2, double f250B2Frequency, double f250B2dBm, ref double pf250B2dB, ref double pf250B2Phase,
-            int nMeasure250B3, double f250B3Frequency, double f250B3dBm, ref double pf250B3dB, ref double pf250B3Phase, int nMeasure250B4,
+        public static extern int MeasureRaw(int nAverages, int nMeasure250B1, double f250B1Frequency, double f250B1dBm,
+            ref double pf250B1dB,
+            ref double pf250B1Phase, int nMeasure250B2, double f250B2Frequency, double f250B2dBm, ref double pf250B2dB,
+            ref double pf250B2Phase,
+            int nMeasure250B3, double f250B3Frequency, double f250B3dBm, ref double pf250B3dB, ref double pf250B3Phase,
+            int nMeasure250B4,
             double f250B4Frequency, double f250B4dBm, ref double pf250B4dB, ref double pf250B4Phase);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int MeasureRX(int nAverages, int nMeasure250B1, double f250B1Frequency, double f250B1dBm, ref double pf250B1R, ref double pf250B1X,
-            int nMeasure250B2, double f250B2Frequency, double f250B2dBm, ref double pf250B2R, ref double pf250B2X, int nMeasure250B3, double f250B3Frequency,
-            double f250B3dBm, ref double pf250B3R, ref double pf250B3X, int nMeasure250B4, double f250B4Frequency, double f250B4dBm, ref double pf250B4R,
+        public static extern int MeasureRX(int nAverages, int nMeasure250B1, double f250B1Frequency, double f250B1dBm,
+            ref double pf250B1R, ref double pf250B1X,
+            int nMeasure250B2, double f250B2Frequency, double f250B2dBm, ref double pf250B2R, ref double pf250B2X,
+            int nMeasure250B3, double f250B3Frequency,
+            double f250B3dBm, ref double pf250B3R, ref double pf250B3X, int nMeasure250B4, double f250B4Frequency,
+            double f250B4dBm, ref double pf250B4R,
             ref double pf250B4X);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int RetrieveDLDResults(int nDLDResultsID, int nStepIndex, ref double pf250B1dBm, ref double pf250B1Power,
-            ref double pf250B1Resistance, ref double pf250B1Frequency, ref double pf250B2dBm, ref double pf250B2Power, ref double pf250B2Resistance,
-            ref double pf250B2Frequency, ref double pf250B3dBm, ref double pf250B3Power, ref double pf250B3Resistance, ref double pf250B3Frequency,
-            ref double pf250B4dBm, ref double pf250B4Power, ref double pf250B4Resistance, ref double pf250B4Frequency, ref int pnSuccess);
+        public static extern int RetrieveDLDResults(int nDLDResultsID, int nStepIndex, ref double pf250B1dBm,
+            ref double pf250B1Power,
+            ref double pf250B1Resistance, ref double pf250B1Frequency, ref double pf250B2dBm, ref double pf250B2Power,
+            ref double pf250B2Resistance,
+            ref double pf250B2Frequency, ref double pf250B3dBm, ref double pf250B3Power, ref double pf250B3Resistance,
+            ref double pf250B3Frequency,
+            ref double pf250B4dBm, ref double pf250B4Power, ref double pf250B4Resistance, ref double pf250B4Frequency,
+            ref int pnSuccess);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int RetrieveDLDSteps(int nDLDResultsID, int nRetrieve250B1Steps, ref int pn250B1Steps, int nRetrieve250B2Steps,
-            ref int pn250B2Steps, int nRetrieve250B3Steps, ref int pn250B3Steps, int nRetrieve250B4Steps, ref int pn250B4Steps);
+        public static extern int RetrieveDLDSteps(int nDLDResultsID, int nRetrieve250B1Steps, ref int pn250B1Steps,
+            int nRetrieve250B2Steps,
+            ref int pn250B2Steps, int nRetrieve250B3Steps, ref int pn250B3Steps, int nRetrieve250B4Steps,
+            ref int pn250B4Steps);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int RetrieveDLDSweepResistance(int nDLDSweepID, ref double pfResistance, ref int pnSuccess);
+        public static extern int
+            RetrieveDLDSweepResistance(int nDLDSweepID, ref double pfResistance, ref int pnSuccess);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int RetrieveDLDSweepB(int nDLDSweepID, int nSweepIndex, ref double pfBeginPower, ref string pbstrBeginPowerUnit,
-            ref double pfEndPower, ref string pbstrEndPowerUnit, ref int pnSteps, ref double pfDelay, ref int pnAverages, ref int pnSuccess);
+        private static extern int RetrieveDLDSweepB(int nDLDSweepID, int nSweepIndex, ref double pfBeginPower,
+            ref string pbstrBeginPowerUnit,
+            ref double pfEndPower, ref string pbstrEndPowerUnit, ref int pnSteps, ref double pfDelay,
+            ref int pnAverages, ref int pnSuccess);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int RetrieveDLDSweepC(int nDLDSweepID, int nSweepIndex, ref double pfBeginPower, ref string pstrBeginPowerUnit,
-            ref double pfEndPower, ref string pstrEndPowerUnit, ref int pnSteps, ref double pfDelay, ref int pnAverages, ref int pnSuccess);
+        private static extern int RetrieveDLDSweepC(int nDLDSweepID, int nSweepIndex, ref double pfBeginPower,
+            ref string pstrBeginPowerUnit,
+            ref double pfEndPower, ref string pstrEndPowerUnit, ref int pnSteps, ref double pfDelay, ref int pnAverages,
+            ref int pnSuccess);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int RetrieveSpurSteps(int nSpurResultsID, int n250BIndex, int nSweepIndex, ref int pnSteps);
+        public static extern int RetrieveSpurSteps(int nSpurResultsID, int n250BIndex, int nSweepIndex,
+            ref int pnSteps);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        public static extern int RetrieveSpurResults(int nSpurResultsID, int n250BIndex, int nSweepIndex, int nStepIndex, ref double pfFrequency,
-            ref double pfAmplitude, ref double pfR1, ref double pfX1, ref double pfZAmplitude, ref double pfZPhase, ref int pnSuccess);
+        public static extern int RetrieveSpurResults(int nSpurResultsID, int n250BIndex, int nSweepIndex,
+            int nStepIndex, ref double pfFrequency,
+            ref double pfAmplitude, ref double pfR1, ref double pfX1, ref double pfZAmplitude, ref double pfZPhase,
+            ref int pnSuccess);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
         public static extern int SetCalculatedFLMode();
@@ -537,20 +707,26 @@ namespace Measurement
         private static extern int SetReferencePowerC(double fPower, string strUnits, double fResistance);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int SetSerialNumbersB(int nSet250B1SerialNumber, string bstr250B1SerialNumber, int nSet250B2SerialNumber,
-            string bstr250B2SerialNumber, int nSet250B3SerialNumber, string bstr250B3SerialNumber, int nSet250B4SerialNumber, string bstr250B4SerialNumber,
+        private static extern int SetSerialNumbersB(int nSet250B1SerialNumber, string bstr250B1SerialNumber,
+            int nSet250B2SerialNumber,
+            string bstr250B2SerialNumber, int nSet250B3SerialNumber, string bstr250B3SerialNumber,
+            int nSet250B4SerialNumber, string bstr250B4SerialNumber,
             ref int pnSerialNumbersSet);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int SetSerialNumbersC(int nSet250B1SerialNumber, string str250B1SerialNumber, int nSet250B2SerialNumber,
-            string str250B2SerialNumber, int nSet250B3SerialNumber, string str250B3SerialNumber, int nSet250B4SerialNumber, string str250B4SerialNumber,
+        private static extern int SetSerialNumbersC(int nSet250B1SerialNumber, string str250B1SerialNumber,
+            int nSet250B2SerialNumber,
+            string str250B2SerialNumber, int nSet250B3SerialNumber, string str250B3SerialNumber,
+            int nSet250B4SerialNumber, string str250B4SerialNumber,
             ref int pnSerialNumbersSet);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int SimplifiedOLEInterfaceB(string bstrCommand, string bstrParameters, ref string pbstrResult);
+        private static extern int SimplifiedOLEInterfaceB(string bstrCommand, string bstrParameters,
+            ref string pbstrResult);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int SimplifiedOLEInterfaceC(string strCommand, string strParameters, ref string pstrResult);
+        private static extern int SimplifiedOLEInterfaceC(string strCommand, string strParameters,
+            ref string pstrResult);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
         private static extern int VerifyCalibrationC(int nPromptForLoadResistor, ref string pstrResult);
