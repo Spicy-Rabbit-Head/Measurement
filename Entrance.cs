@@ -433,6 +433,56 @@ namespace Measurement
             }
         }
 
+        // 写入位置上下限
+        public Task<object> WritePositionLimit(dynamic obj)
+        {
+            try
+            {
+                var index = (bool)obj.index;
+                var count = (int)obj.count;
+                if (index)
+                {
+                    ent.SetData(PlcMemory.DM, 404, count);
+                    return Task.FromResult<object>(true);
+                }
+
+                ent.SetData(PlcMemory.DM, 406, count);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 读取量测开始信号
+        public Task<object> ReadMeasureStart()
+        {
+            try
+            {
+                ent.GetBitStates(PlcMemory.CIO, "4601.08", out var state);
+                return Task.FromResult<object>(state[0]);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 输出量测完毕信号
+        public Task<object> WriteMeasureEnd()
+        {
+            try
+            {
+                ent.SetBitState(PlcMemory.CIO, "4601.06", BitState.ON);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
 
         // 250B公共接口
 

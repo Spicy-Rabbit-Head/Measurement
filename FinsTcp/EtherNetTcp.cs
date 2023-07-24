@@ -342,7 +342,7 @@ namespace Measurement.FinsTcp
         /// <returns>是否成功</returns>
         /// <exception cref="Exception">暂不支持此类型</exception>
         /// <exception cref="Exception">写入数据失败</exception>
-        private void SetData<T>(PlcMemory mr, object ch, T inData) where T : new()
+        public void SetData<T>(PlcMemory mr, object ch, T inData) where T : new()
         {
             short isok;
 
@@ -689,7 +689,7 @@ namespace Measurement.FinsTcp
         /// <param name="bs">返回开关状态枚举EtherNetPLC.BitState，0/1</param>
         /// <param name="cnt"></param>
         /// <returns>0为成功</returns>
-        private short GetBitStates(PlcMemory mr, string ch, out bool[] bs, short cnt = 1)
+        public short GetBitStates(PlcMemory mr, string ch, out bool[] bs, short cnt = 1)
         {
             bs = new bool[cnt];
             var buffer = new byte[30 + cnt]; // 用于接收数据的缓存区大小
@@ -764,7 +764,7 @@ namespace Measurement.FinsTcp
         /// <param name="ch">地址000.00</param>
         /// <param name="bs">开关状态枚举EtherNetPLC.BitState，0/1</param>
         /// <returns>0为成功</returns>
-        private short SetBitState(PlcMemory mr, string ch, BitState bs)
+        public short SetBitState(PlcMemory mr, string ch, BitState bs)
         {
             var buffer = new byte[30];
             var cnInt = short.Parse(ch.Split('.')[0]);
