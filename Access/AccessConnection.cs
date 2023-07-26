@@ -31,14 +31,15 @@ namespace Measurement.Access
         }
 
         // 改变所有补正值
-        public bool AllChange(string[] dos)
+        public bool AllChange(object dos)
         {
             var i = 0;
             try
             {
                 ole.Open();
+                var dosList = (List<string>)dos;
                 var sql =
-                    $"update Setup set strPortFrequencyOffsets='{dos[0]},{dos[1]},{dos[2]},{dos[3]}';";
+                    $"update Setup set strPortFrequencyOffsets='{dosList[0]},{dosList[1]},{dosList[2]},{dosList[3]}';";
                 var oleDbCommand = new OleDbCommand(sql, ole);
                 i = oleDbCommand.ExecuteNonQuery();
                 ole.Close();
@@ -79,6 +80,7 @@ namespace Measurement.Access
             }
             catch (Exception e)
             {
+                ole.Close();
                 return null;
             }
         }

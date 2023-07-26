@@ -153,6 +153,7 @@ namespace Measurement
             {
                 for (var i = 0; i < 4; i++)
                 {
+                    SelectPort(1, i);
                     var data = MeasurementData();
                     if (string.IsNullOrEmpty(data)) return Task.FromResult<object>(null);
                     dataList.Add(data);
@@ -223,7 +224,7 @@ namespace Measurement
             else
                 ent.SetBitState("W0.04", BitState.ON);
 
-            Thread.Sleep(200);
+            Thread.Sleep(500);
             return Task.FromResult<object>(true);
         }
 
@@ -280,11 +281,14 @@ namespace Measurement
         }
 
         // 写入标品补偿值
-        public Task<object> WriteStandardProduct(string[] data)
+        public Task<object> WriteStandardProduct(object data)
         {
             try
             {
-                return Task.FromResult<object>(accessConnection.AllChange(data));
+                // ClearAllMeasurements();
+                // var b = accessConnection.AllChange(data);
+                // ClearAllMeasurements();
+                return Task.FromResult<object>((string[])data);
             }
             catch (Exception)
             {
