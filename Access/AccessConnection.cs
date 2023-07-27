@@ -31,13 +31,15 @@ namespace Measurement.Access
         }
 
         // 改变所有补正值
-        public bool AllChange(object dos)
+        public object AllChange(string dos)
         {
             var i = 0;
             try
             {
+                ole.ConnectionString = Mark + Compensate;
                 ole.Open();
-                var dosList = (List<string>)dos;
+                var dosList = dos.Split('_');
+
                 var sql =
                     $"update Setup set strPortFrequencyOffsets='{dosList[0]},{dosList[1]},{dosList[2]},{dosList[3]}';";
                 var oleDbCommand = new OleDbCommand(sql, ole);
@@ -47,7 +49,7 @@ namespace Measurement.Access
             catch (Exception e)
             {
                 ole.Close();
-                return false;
+                return e;
             }
 
             return i > 0;
@@ -89,18 +91,6 @@ namespace Measurement.Access
         public void Init()
         {
             ole = new OleDbConnection();
-        }
-
-        // 设置为250B连接
-        public void Set250B()
-        {
-            ole.ConnectionString = Mark + Compensate;
-        }
-
-        // 设置为标品连接
-        public void SetStandard(string s)
-        {
-            ole.ConnectionString = Mark + s;
         }
     }
 }

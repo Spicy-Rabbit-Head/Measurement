@@ -281,18 +281,18 @@ namespace Measurement
         }
 
         // 写入标品补偿值
-        public Task<object> WriteStandardProduct(object data)
+        public Task<object> WriteStandardProduct(string data)
         {
             try
             {
-                // ClearAllMeasurements();
-                // var b = accessConnection.AllChange(data);
-                // ClearAllMeasurements();
-                return Task.FromResult<object>((string[])data);
+                ClearAllMeasurements();
+                var b = accessConnection.AllChange(data);
+                ClearAllMeasurements();
+                return Task.FromResult<object>(b);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return Task.FromResult<object>(null);
+                return Task.FromResult<object>(e);
             }
         }
 
