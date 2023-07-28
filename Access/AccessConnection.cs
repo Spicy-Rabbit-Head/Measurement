@@ -31,7 +31,7 @@ namespace Measurement.Access
         }
 
         // 改变所有补正值
-        public object AllChange(string dos)
+        public bool AllChange(string dos)
         {
             var i = 0;
             try
@@ -44,14 +44,14 @@ namespace Measurement.Access
                     $"update Setup set strPortFrequencyOffsets='{dosList[0]},{dosList[1]},{dosList[2]},{dosList[3]}';";
                 var oleDbCommand = new OleDbCommand(sql, ole);
                 i = oleDbCommand.ExecuteNonQuery();
-                ole.Close();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ole.Close();
-                return e;
+                return false;
             }
 
+            ole.Close();
             return i > 0;
         }
 
@@ -78,9 +78,37 @@ namespace Measurement.Access
                     datas.Add(new StandardData(dataTable.Rows[i][1].ToString(), num));
                 }
 
+                dataTable.Reset();
                 return datas;
             }
-            catch (Exception e)
+            catch (Exception)
+            {
+                ole.Close();
+                return null;
+            }
+        }
+
+        // 获取测试值设定
+        public List<int> GetTestSet()
+        {
+            try
+            {
+                ole.ConnectionString = Mark + Compensate;
+                ole.Open();
+                var inst = new OleDbDataAdapter("SELECT HighLimit,LowLimit FROM Tests where MeasurementType='FL' and Unit='ppm'", ole);
+                var dataSet = new DataTable();
+                inst.Fill(dataSet);
+                var datas = new List<int>();
+                for (var i = 0; i < 2; i++)
+                {
+                    datas.Add(int.Parse(dataSet.Rows[0][i].ToString()));
+                }
+
+                ole.Close();
+                dataSet.Reset();
+                return datas;
+            }
+            catch
             {
                 ole.Close();
                 return null;

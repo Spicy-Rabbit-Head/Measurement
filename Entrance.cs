@@ -59,10 +59,10 @@ namespace Measurement
             }
             catch (Exception e)
             {
-                return Task.FromResult<object>(e);
+                return Task.FromResult<object>(false);
             }
 
-            return Task.FromResult<object>("服务器启动成功");
+            return Task.FromResult<object>(true);
         }
 
         // 关闭250B服务器
@@ -293,6 +293,26 @@ namespace Measurement
             catch (Exception e)
             {
                 return Task.FromResult<object>(e);
+            }
+        }
+
+        // 读取测试上下限
+        public Task<object> GetTestRestrict(object none)
+        {
+            return Task.FromResult<object>(accessConnection.GetTestSet());
+        }
+
+        // 改变文件
+        public Task<object> ChangeFile(string path)
+        {
+            try
+            {
+                FileOpenB(path);
+                return Task.FromResult<object>(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(false);
             }
         }
 
@@ -552,6 +572,10 @@ namespace Measurement
             [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B3Results, int nMeasure250B4AndGetResults,
             [MarshalAs(UnmanagedType.BStr)] ref string pbstr250B4Results);
 
+        // 打开或改变QCC文件
+        [DllImport(DllUrl, CharSet = CharSet.Unicode)]
+        private static extern int FileOpenB(string bstrQccFilePath);
+
         // .............................
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
@@ -587,9 +611,6 @@ namespace Measurement
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
         public static extern int EnableOEMKey(int nOEMNumber);
-
-        [DllImport(DllUrl, CharSet = CharSet.Unicode)]
-        private static extern int FileOpenB(string bstrQCCFilePath);
 
         [DllImport(DllUrl, CharSet = CharSet.Unicode)]
         private static extern int FileOpenC(string strQCCFilePath);
