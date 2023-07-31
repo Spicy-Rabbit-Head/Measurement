@@ -167,6 +167,56 @@ namespace Measurement
             return Task.FromResult<object>(dataList);
         }
 
+        // 一次测试并返回全部数据
+        private List<object> MeasurementDataAll()
+        {
+            var results = new List<object>();
+            try
+            {
+                var result1 = "";
+                var result2 = "";
+                var result3 = "";
+                var result4 = "";
+                MeasureAndGetResultsB(1, ref result1, 0, ref result2, 0, ref result3, 0, ref result4);
+                var str = result1.Split(Regular, StringSplitOptions.RemoveEmptyEntries);
+                for (var i = 0; i < str.Length / 3; i++)
+                {
+                    var index = i * 3;
+                    var ret = new[] { str[index], str[index + 1] };
+                    results.Add(ret);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            return results;
+        }
+
+        // 一组测试并返回全部数据
+        public Task<object> TestOneGroupData(object none)
+        {
+            var dataList = new List<object>(4);
+            try
+            {
+                for (var i = 0; i < 4; i++)
+                {
+                    SelectPort(1, i);
+                    var data = MeasurementDataAll();
+
+                    if (data == null) return Task.FromResult<object>(null);
+                    dataList.Add(data);
+                }
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(null);
+            }
+
+            return Task.FromResult<object>(dataList);
+        }
+
         // 设置串口
         public Task<object> SetSerialPort(string post)
         {
@@ -278,6 +328,29 @@ namespace Measurement
             }
 
             return success != 0;
+        }
+
+        // 保存校准数据
+        public Task<object> SaveCalibrationData(object none)
+        {
+            try
+            {
+                for (var i = 0; i < 4; i++)
+                {
+                    var start = 0;
+                    SaveCalibration(1, i, ref start);
+                    if (start == 0)
+                    {
+                        return Task.FromResult<object>(false);
+                    }
+                }
+
+                return Task.FromResult<object>(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<object>(false);
+            }
         }
 
         // 写入标品补偿值
@@ -522,7 +595,7 @@ namespace Measurement
         {
             try
             {
-                ent.GetBitStates(PlcMemory.CIO, "4601.08", out var state);
+                ent.GetBitStates(PlcMemory.CIO, "4601.05", out var state);
                 Thread.Sleep(80);
                 return Task.FromResult<object>(state[0]);
             }
@@ -537,9 +610,54 @@ namespace Measurement
         {
             try
             {
+                ent.SetBitState(PlcMemory.CIO, "4601.05", BitState.OFF);
                 ent.SetBitState(PlcMemory.CIO, "4601.06", BitState.ON);
                 Thread.Sleep(20);
                 ent.SetBitState(PlcMemory.CIO, "4601.06", BitState.OFF);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 输出开路完成信号
+        public Task<object> WriteOpenEnd(object none)
+        {
+            try
+            {
+                ent.SetBitState(PlcMemory.CIO, "4607.14 ", BitState.ON);
+                Thread.Sleep(20);
+                ent.SetBitState(PlcMemory.CIO, "4607.14 ", BitState.OFF);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 关闭测试
+        public Task<object> CloseTest(object none)
+        {
+            try
+            {
+                ent.WriteWord(PlcMemory.CIO, 4604, 513);
+                var state = true;
+                while (state)
+                {
+                    ent.GetBitStates(PlcMemory.CIO, "4601.10", out var states);
+                    var b = states[0];
+                    if (b)
+                    {
+                        state = false;
+                    }
+
+                    Thread.Sleep(50);
+                }
+
+                ent.WriteWord(PlcMemory.CIO, 4604, 0);
                 return Task.FromResult<object>(true);
             }
             catch
