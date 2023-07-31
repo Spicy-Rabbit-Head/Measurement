@@ -317,7 +317,7 @@ namespace Measurement
         }
 
         // 设置运行模式
-        public Task<object> SetRunMode(int mode)
+        private bool SetRunMode(int mode)
         {
             try
             {
@@ -347,11 +347,48 @@ namespace Measurement
                     case 4:
                         ent.WriteWord(PlcMemory.CIO, 4604, 16);
                         break;
+
+                    // 校对机模式
+                    case 5:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 12);
+                        break;
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // 开启自动模式
+        public Task<object> OpenAutoMode(object none)
+        {
+            return SetRunMode(1) ? Task.FromResult<object>(true) : Task.FromResult<object>(false);
+        }
+
+        // 校对机模式
+        public Task<object> OpenProofreadingMode(int index)
+        {
+            try
+            {
+                switch (index)
+                {
+                    case 0:
+                        SetRunMode(5);
+                        break;
+                    case 1:
+                        SetRunMode(2);
+                        break;
+                    case 2:
+                        SetRunMode(3);
+                        break;
                 }
 
                 return Task.FromResult<object>(true);
             }
-            catch (Exception)
+            catch
             {
                 return Task.FromResult<object>(false);
             }
@@ -385,7 +422,8 @@ namespace Measurement
                         break;
                 }
 
-                return Task.FromResult<object>(true);
+                // 状态刷新
+                return Task.FromResult<object>(SetRunMode(0));
             }
             catch
             {
@@ -480,11 +518,12 @@ namespace Measurement
         }
 
         // 读取量测开始信号
-        public Task<object> ReadMeasureStart()
+        public Task<object> ReadMeasureStart(object none)
         {
             try
             {
                 ent.GetBitStates(PlcMemory.CIO, "4601.08", out var state);
+                Thread.Sleep(80);
                 return Task.FromResult<object>(state[0]);
             }
             catch
@@ -494,11 +533,13 @@ namespace Measurement
         }
 
         // 输出量测完毕信号
-        public Task<object> WriteMeasureEnd()
+        public Task<object> WriteMeasureEnd(object none)
         {
             try
             {
                 ent.SetBitState(PlcMemory.CIO, "4601.06", BitState.ON);
+                Thread.Sleep(20);
+                ent.SetBitState(PlcMemory.CIO, "4601.06", BitState.OFF);
                 return Task.FromResult<object>(true);
             }
             catch
