@@ -17,9 +17,6 @@ namespace Measurement
         // 正则规则
         private static readonly string[] Regular = { "=", "(", "),", ")" };
 
-        // PLC驱动
-        // private static Omrom omrom;
-
         // Access数据库驱动
         private static AccessConnection accessConnection;
 
@@ -34,10 +31,7 @@ namespace Measurement
         {
             try
             {
-                // omrom = new Omrom();
                 accessConnection = new AccessConnection();
-
-                // omrom.Init(port);
                 accessConnection.Init();
                 ent = new EtherNetTcp();
                 ent.Link("150.110.60.6", 9600);
@@ -217,81 +211,10 @@ namespace Measurement
             return Task.FromResult<object>(dataList);
         }
 
-        // 设置串口
-        public Task<object> SetSerialPort(string post)
-        {
-            try
-            {
-                // omrom.SetPort(post);
-            }
-            catch (Exception)
-            {
-                return Task.FromResult<object>(false);
-            }
-
-            return Task.FromResult<object>(true);
-        }
-
-        // 获取串口
-        public Task<object> GetSerialPort(object none)
-        {
-            try
-            {
-                // return Task.FromResult<object>(omrom.GetPort());
-                return Task.FromResult<object>(null);
-            }
-            catch (Exception)
-            {
-                return Task.FromResult<object>(null);
-            }
-        }
-
-        // 获取串口列表
-        public Task<object> GetSerialPortList(object none)
-        {
-            try
-            {
-                // return Task.FromResult<object>(omrom.GetPortList());
-                return Task.FromResult<object>(null);
-            }
-            catch (Exception)
-            {
-                return Task.FromResult<object>(false);
-            }
-        }
-
         // 查询标品状态
         public Task<object> GetStandardProductData(dynamic data)
         {
             return Task.FromResult<object>(accessConnection.GetStandard(data));
-        }
-
-        // 丝杆动作
-        public Task<object> ScrewAction(int i)
-        {
-            if (i == 0)
-                ent.SetBitState("I0.08", BitState.ON);
-            else
-                ent.SetBitState("W0.04", BitState.ON);
-
-            Thread.Sleep(500);
-            return Task.FromResult<object>(true);
-        }
-
-        // 获取丝杆状态
-        public Task<object> GetScrewState(int i)
-        {
-            Thread.Sleep(50);
-            if (i == 0)
-            {
-                ent.GetBitState("I0.07", out var state);
-                return Task.FromResult<object>(state == 1);
-            }
-            else
-            {
-                ent.GetBitState("I0.10", out var state);
-                return Task.FromResult<object>(state == 1);
-            }
         }
 
         // 校机
@@ -314,11 +237,12 @@ namespace Measurement
         private static bool CalibrateDivider(int steps, int portIndex, string fixture)
         {
             var success = 0;
+            Thread.Sleep(50);
             switch (steps)
             {
                 case 0:
                     CalibrateShortB(Port, portIndex, fixture, ref success);
-                    break;
+                    break;  
                 case 1:
                     CalibrateLoadB(Port, portIndex, fixture, ref success);
                     break;
@@ -510,6 +434,7 @@ namespace Measurement
         {
             try
             {
+                SetRunMode(0);
                 switch (i)
                 {
                     // 准备位置0
@@ -658,6 +583,22 @@ namespace Measurement
                 }
 
                 ent.WriteWord(PlcMemory.CIO, 4604, 0);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 错误终止
+        public Task<object> ErrorStop(object none)
+        {
+            try
+            {
+                ent.SetBitState(PlcMemory.CIO, "4612.00", BitState.ON);
+                Thread.Sleep(100);
+                ent.SetBitState(PlcMemory.CIO, "4612.00", BitState.OFF);
                 return Task.FromResult<object>(true);
             }
             catch
