@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Measurement.Access;
+using Measurement.Automation;
 using Measurement.FinsTcp;
 
 namespace Measurement
@@ -26,12 +27,20 @@ namespace Measurement
         // PLC驱动
         private static EtherNetTcp ent;
 
+        // 监听线程
+        private static Thread listenThread;
+
+        // UI控制
+        private static AutoUi autoUi;
+
         // 自定义公共接口
+        // 初始化
         public Task<object> Init(string port)
         {
             try
             {
                 accessConnection = new AccessConnection();
+                autoUi = new AutoUi();
                 accessConnection.Init();
                 ent = new EtherNetTcp();
                 ent.Link("150.110.60.6", 9600);
@@ -51,7 +60,7 @@ namespace Measurement
             {
                 ConnectToServer();
             }
-            catch (Exception e)
+            catch
             {
                 return Task.FromResult<object>(false);
             }
@@ -75,7 +84,7 @@ namespace Measurement
             return Task.FromResult<object>("服务器关闭成功");
         }
 
-        // 切换端口
+        // 切换量测端口
         public Task<object> SwitchPort(int port)
         {
             try
@@ -233,25 +242,48 @@ namespace Measurement
             }
         }
 
+        // 刷新应用程序
+        public Task<object> RefreshApplication(string number)
+        {
+            try
+            {
+                return Task.FromResult<object>(autoUi.VerificationState(number));
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
         // 校准分压
         private static bool CalibrateDivider(int steps, int portIndex, string fixture)
         {
-            var success = 0;
-            Thread.Sleep(50);
-            switch (steps)
+            try
             {
-                case 0:
-                    CalibrateShortB(Port, portIndex, fixture, ref success);
-                    break;  
-                case 1:
-                    CalibrateLoadB(Port, portIndex, fixture, ref success);
-                    break;
-                case 2:
-                    CalibrateOpenB(Port, portIndex, fixture, ref success);
-                    break;
-            }
+                StartTimeoutListener();
+                var success = 0;
+                Thread.Sleep(50);
+                switch (steps)
+                {
+                    case 0:
+                        CalibrateShortB(Port, portIndex, fixture, ref success);
+                        break;
+                    case 1:
+                        CalibrateLoadB(Port, portIndex, fixture, ref success);
+                        break;
+                    case 2:
+                        CalibrateOpenB(Port, portIndex, fixture, ref success);
+                        break;
+                }
 
-            return success != 0;
+                StopTimeoutListener();
+                return success != 0;
+            }
+            catch
+            {
+                StopTimeoutListener();
+                return false;
+            }
         }
 
         // 保存校准数据
@@ -340,7 +372,7 @@ namespace Measurement
                         ent.WriteWord(PlcMemory.CIO, 4604, 8);
                         break;
 
-                    // 调试模式
+                    // 试调模式
                     case 4:
                         ent.WriteWord(PlcMemory.CIO, 4604, 16);
                         break;
@@ -348,6 +380,11 @@ namespace Measurement
                     // 校对机模式
                     case 5:
                         ent.WriteWord(PlcMemory.CIO, 4604, 12);
+                        break;
+
+                    // 清空模式
+                    case 6:
+                        ent.WriteWord(PlcMemory.CIO, 4604, 0);
                         break;
                 }
 
@@ -383,6 +420,7 @@ namespace Measurement
                         break;
                 }
 
+                SetRunMode(6);
                 return Task.FromResult<object>(true);
             }
             catch
@@ -420,7 +458,7 @@ namespace Measurement
                 }
 
                 // 状态刷新
-                return Task.FromResult<object>(SetRunMode(0));
+                return Task.FromResult<object>(SetRunMode(6));
             }
             catch
             {
@@ -429,8 +467,8 @@ namespace Measurement
         }
 
 
-        // 手动控制
-        public Task<object> ManualControl(int i)
+        // 手动位置控制
+        public Task<object> ManualPosition(int i)
         {
             try
             {
@@ -480,7 +518,7 @@ namespace Measurement
                     // 对机位置
                     case 8:
                         ent.WriteWord(PlcMemory.CIO, 4603, 512);
-                        break;
+                        break;  
                 }
 
                 ent.WriteWord(PlcMemory.CIO, 4603, 0);
@@ -605,6 +643,26 @@ namespace Measurement
             {
                 return Task.FromResult<object>(false);
             }
+        }
+
+        // 开启超时监听
+        private static void StartTimeoutListener()
+        {
+            listenThread = new Thread(autoUi.WaitMainThreadTimeout);
+            listenThread.Start();
+        }
+
+        // 关闭超时监听
+        private static void StopTimeoutListener()
+        {
+            autoUi.StopToken();
+            listenThread = null;
+        }
+
+        // 保存文件
+        public Task<object> SaveFile(object none)
+        {
+            return Task.FromResult<object>(autoUi.SaveData());
         }
 
 
