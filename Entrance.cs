@@ -104,7 +104,7 @@ namespace Measurement
         {
             try
             {
-                Measure();
+                return Task.FromResult<object>(MeasurementDataAll());
             }
             catch (Exception)
             {
@@ -185,7 +185,7 @@ namespace Measurement
                 for (var i = 0; i < str.Length / 3; i++)
                 {
                     var index = i * 3;
-                    var ret = new[] { str[index], str[index + 1] };
+                    var ret = new[] { str[index], str[index + 1], str[index + 2] };
                     results.Add(ret);
                 }
             }
@@ -518,7 +518,7 @@ namespace Measurement
                     // 对机位置
                     case 8:
                         ent.WriteWord(PlcMemory.CIO, 4603, 512);
-                        break;  
+                        break;
                 }
 
                 ent.WriteWord(PlcMemory.CIO, 4603, 0);
@@ -663,6 +663,41 @@ namespace Measurement
         public Task<object> SaveFile(object none)
         {
             return Task.FromResult<object>(autoUi.SaveData());
+        }
+
+        // 当前位置
+        public Task<object> CurrentPosition(object none)
+        {
+            try
+            {
+                ent.ReadWords("I4605.01", 6, out var data);
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (data[i] != 0)
+                    {
+                        return Task.FromResult<object>(i);
+                    }
+                }
+
+                return Task.FromResult<object>(null);
+            }
+            catch
+            {
+                return Task.FromResult<object>(null);
+            }
+        }
+
+        // 当前列
+        public Task<object> CurrentColumn(object none)
+        {
+            try
+            {
+                return Task.FromResult<object>(ent.GetData<int>("D2202"));
+            }
+            catch
+            {
+                return Task.FromResult<object>(null);
+            }
         }
 
 
