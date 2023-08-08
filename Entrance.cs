@@ -110,8 +110,6 @@ namespace Measurement
             {
                 return Task.FromResult<object>(false);
             }
-
-            return Task.FromResult<object>(true);
         }
 
         // 测试数据
@@ -697,6 +695,48 @@ namespace Measurement
             catch
             {
                 return Task.FromResult<object>(null);
+            }
+        }
+
+        // 清除
+        public Task<object> Clear(object none)
+        {
+            try
+            {
+                ClearAllMeasurements();
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 开始报警
+        public Task<object> StartAlarm(object none)
+        {
+            try
+            {
+                ent.SetBitState(PlcMemory.CIO, "4614.00", BitState.ON);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 停止报警
+        public Task<object> StopAlarm(object none)
+        {
+            try
+            {
+                ent.SetBitState(PlcMemory.CIO, "4614.00", BitState.OFF);
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
             }
         }
 
