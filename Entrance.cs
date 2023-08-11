@@ -663,7 +663,7 @@ namespace Measurement
             return Task.FromResult<object>(autoUi.SaveData());
         }
 
-        // 当前位置
+        // 当前行
         public Task<object> CurrentPosition(object none)
         {
             try
@@ -673,7 +673,7 @@ namespace Measurement
                 {
                     if (data[i] != 0)
                     {
-                        return Task.FromResult<object>(i);
+                        return Task.FromResult<object>(i * 4);
                     }
                 }
 
@@ -690,11 +690,24 @@ namespace Measurement
         {
             try
             {
-                return Task.FromResult<object>(ent.GetData<int>("D2202"));
+                return Task.FromResult<object>(CalculateColumnMap(ent.GetData<int>("D2202")));
             }
             catch
             {
                 return Task.FromResult<object>(null);
+            }
+        }
+
+        // 计算对应列映射
+        private int CalculateColumnMap(int input)
+        {
+            try
+            {
+                return input * 2 + 6;
+            }
+            catch
+            {
+                return 0;
             }
         }
 
