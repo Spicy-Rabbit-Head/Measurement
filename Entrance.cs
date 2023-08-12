@@ -143,7 +143,7 @@ namespace Measurement
         public Task<object> MeasureAndReturn(object none)
         {
             var data = MeasurementData();
-            return Task.FromResult(string.IsNullOrEmpty(data) ? (object)false : data);
+            return Task.FromResult(string.IsNullOrEmpty(data) ? (object)null : data);
         }
 
         // 一组测试并返回数据
@@ -703,7 +703,7 @@ namespace Measurement
         {
             try
             {
-                return input * 2 + 6;
+                return input * 2 + 5;
             }
             catch
             {
@@ -750,6 +750,37 @@ namespace Measurement
             catch
             {
                 return Task.FromResult<object>(false);
+            }
+        }
+
+        // 查询盘号
+        public Task<object> QueryDisk(object none)
+        {
+            try
+            {
+                ent.ReadWords("H3.00", 5, out var data1);
+                for (var i = 0; i < data1.Length; i++)
+                {
+                    if (data1[i] != 0)
+                    {
+                        return Task.FromResult<object>(i + 1);
+                    }
+                }
+
+                ent.ReadWords("H4.00", 5, out var data2);
+                for (var j = 0; j < data2.Length; j++)
+                {
+                    if (data2[j] != 0)
+                    {
+                        return Task.FromResult<object>(j + 6);
+                    }
+                }
+
+                return Task.FromResult<object>(null);
+            }
+            catch
+            {
+                return Task.FromResult<object>(null);
             }
         }
 
