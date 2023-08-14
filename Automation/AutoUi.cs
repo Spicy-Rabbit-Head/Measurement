@@ -50,7 +50,7 @@ namespace Measurement.Automation
         {
             try
             {
-                Thread.Sleep(30000);
+                Thread.Sleep(25000);
                 if (!CancellationTokenSource.Token.IsCancellationRequested)
                 {
                     ExecutiveExit(targetWindow);

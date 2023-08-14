@@ -140,8 +140,9 @@ namespace Measurement
         }
 
         // 一次测试并返回数据
-        public Task<object> MeasureAndReturn(object none)
+        public Task<object> MeasureAndReturn(int index)
         {
+            SelectPort(1, index);
             var data = MeasurementData();
             return Task.FromResult(string.IsNullOrEmpty(data) ? (object)null : data);
         }
