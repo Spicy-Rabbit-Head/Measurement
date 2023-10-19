@@ -47,10 +47,10 @@ namespace Measurement
             }
             catch (Exception e)
             {
-                return Task.FromResult<object>(e);
+                return Task.FromResult<object>(false);
             }
 
-            return Task.FromResult<object>("初始化成功");
+            return Task.FromResult<object>(true);
         }
 
         // 打开250B服务器
@@ -78,10 +78,10 @@ namespace Measurement
             }
             catch (Exception)
             {
-                return Task.FromResult<object>("服务器关闭异常");
+                return Task.FromResult<object>(false);
             }
 
-            return Task.FromResult<object>("服务器关闭成功");
+            return Task.FromResult<object>(true);
         }
 
         // 切换量测端口
@@ -358,32 +358,38 @@ namespace Measurement
 
                     // 自动模式
                     case 1:
-                        ent.WriteWord(PlcMemory.CIO, 4604, 2);
+                        ent.WriteWord(PlcMemory.CIO, 4615, 4);
                         break;
 
                     // 校机模式
                     case 2:
-                        ent.WriteWord(PlcMemory.CIO, 4604, 4);
+                        ent.WriteWord(PlcMemory.CIO, 4615, 1);
                         break;
 
                     // 对机模式
                     case 3:
-                        ent.WriteWord(PlcMemory.CIO, 4604, 8);
+                        ent.WriteWord(PlcMemory.CIO, 4615, 2);
                         break;
 
                     // 试调模式
                     case 4:
-                        ent.WriteWord(PlcMemory.CIO, 4604, 16);
+                        ent.WriteWord(PlcMemory.CIO, 4615, 8);
                         break;
 
                     // 校对机模式
                     case 5:
-                        ent.WriteWord(PlcMemory.CIO, 4604, 12);
+                        ent.SetBitState(PlcMemory.CIO, "4615.00", BitState.ON);
+                        Thread.Sleep(20);
+                        ent.SetBitState(PlcMemory.CIO, "4615.01", BitState.ON);
                         break;
 
                     // 清空模式
                     case 6:
                         ent.WriteWord(PlcMemory.CIO, 4604, 0);
+                        break;
+                    // 清空模式
+                    case 7:
+                        ent.WriteWord(PlcMemory.CIO, 4615, 0);
                         break;
                 }
 
@@ -409,17 +415,22 @@ namespace Measurement
                 switch (index)
                 {
                     case 0:
+                        // 校对机
                         SetRunMode(5);
                         break;
                     case 1:
+                        // 校机
                         SetRunMode(2);
                         break;
                     case 2:
+                        // 对机
                         SetRunMode(3);
                         break;
                 }
 
-                SetRunMode(6);
+                Thread.Sleep(100);
+
+                SetRunMode(7);
                 return Task.FromResult<object>(true);
             }
             catch
@@ -455,6 +466,7 @@ namespace Measurement
                         ent.WriteWord(PlcMemory.CIO, 4604, 513);
                         break;
                 }
+
 
                 // 状态刷新
                 return Task.FromResult<object>(SetRunMode(6));
@@ -747,6 +759,19 @@ namespace Measurement
             {
                 ent.SetBitState(PlcMemory.CIO, "4614.00", BitState.OFF);
                 return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
+        // 验证PLC连接状态
+        public Task<object> VerifyPlcConnection(object none)
+        {
+            try
+            {
+                return Task.FromResult<object>(BasicClass.PingCheck("150.110.60.6", 3000));
             }
             catch
             {

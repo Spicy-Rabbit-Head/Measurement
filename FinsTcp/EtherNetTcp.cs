@@ -8,6 +8,7 @@ namespace Measurement.FinsTcp
     {
         private readonly TcpClient client;
         private NetworkStream stream;
+        private Timer timer;
 
         /// <summary>
         /// PLC节点号
@@ -219,6 +220,12 @@ namespace Measurement.FinsTcp
         /// <returns>0为成功</returns>
         public short Link(string ip, int port, short timeOut = 3000)
         {
+            if (timer != null)
+            {
+                timer.Dispose();
+                timer = null;
+            }
+
             // 连接超时
             if (!BasicClass.PingCheck(ip, timeOut)) return -1;
 
@@ -245,7 +252,22 @@ namespace Measurement.FinsTcp
 
             pcNode = buffer[19];
             plcNode = buffer[23];
+
+            // 启动定时器，检查连接状态
+            timer = new Timer(CheckLink, null, 0, 10000);
             return 0;
+        }
+
+        /// <summary>
+        /// 定时检查PLC连接状态
+        /// </summary>
+        private void CheckLink(Object state)
+        {
+            // 连接超时
+            if (!BasicClass.PingCheck("150.110.60.6", 3000))
+            {
+                Link("150.110.60.6", 9600);
+            }
         }
 
         /// <summary>
