@@ -254,7 +254,7 @@ namespace Measurement.FinsTcp
             plcNode = buffer[23];
 
             // 启动定时器，检查连接状态
-            timer = new Timer(CheckLink, null, 0, 10000);
+            timer = new Timer(CheckLink, null, 0, 5000);
             return 0;
         }
 
@@ -263,11 +263,23 @@ namespace Measurement.FinsTcp
         /// </summary>
         private void CheckLink(Object state)
         {
-            // 连接超时
-            if (!BasicClass.PingCheck("150.110.60.6", 3000))
+            if (!client.Connected || client == null || stream == null)
             {
                 Link("150.110.60.6", 9600);
             }
+        }
+
+        /// <summary>
+        /// 查询PLC连接状态
+        /// </summary>
+        public bool IsLink()
+        {
+            if (client.Connected)
+            {
+                return true;
+            }
+
+            return Link("150.110.60.6", 9600) == 0;
         }
 
         /// <summary>

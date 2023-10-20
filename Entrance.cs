@@ -439,6 +439,36 @@ namespace Measurement
             }
         }
 
+        // 校对机位置
+        public Task<object> ProofreadingPosition(int i)
+        {
+            try
+            {
+                switch (i)
+                {
+                    // 校对机位 0 欧姆
+                    case 0:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 256);
+                        break;
+
+                    // 校对机位置 50 欧姆
+                    case 1:
+                        ent.WriteWord(PlcMemory.CIO, 4603, 1024);
+                        break;
+                }
+
+                Thread.Sleep(30);
+
+                ent.WriteWord(PlcMemory.CIO, 4603, 0);
+
+                return Task.FromResult<object>(true);
+            }
+            catch
+            {
+                return Task.FromResult<object>(false);
+            }
+        }
+
         // 测试头位置
         public Task<object> TestHeadPosition(int i)
         {
@@ -483,7 +513,6 @@ namespace Measurement
         {
             try
             {
-                SetRunMode(0);
                 switch (i)
                 {
                     // 准备位置0
