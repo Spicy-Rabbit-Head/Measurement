@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading;
+using Object = System.Object;
 
 namespace Measurement.FinsTcp
 {

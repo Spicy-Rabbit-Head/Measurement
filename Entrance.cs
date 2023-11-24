@@ -393,6 +393,8 @@ namespace Measurement
                         break;
                 }
 
+                Thread.Sleep(20);
+
                 return true;
             }
             catch (Exception)
@@ -405,6 +407,23 @@ namespace Measurement
         public Task<object> OpenAutoMode(object none)
         {
             return SetRunMode(1) ? Task.FromResult<object>(true) : Task.FromResult<object>(false);
+        }
+
+        // 开启试调模式
+        public Task<object> OpenAdjustMode(dynamic obj)
+        {
+            // 开始位置
+            var start = (int)obj.start;
+            // 结束位置
+            var end = (int)obj.end;
+            var runMode = SetRunMode(4);
+            if (runMode)
+            {
+                WritePositionLimit(start, end);
+                return Task.FromResult<object>(true);
+            }
+
+            return Task.FromResult<object>(false);
         }
 
         // 校对机模式
@@ -572,24 +591,17 @@ namespace Measurement
         }
 
         // 写入位置上下限
-        public Task<object> WritePositionLimit(dynamic obj)
+        private bool WritePositionLimit(int index, int count)
         {
             try
             {
-                var index = (bool)obj.index;
-                var count = (int)obj.count;
-                if (index)
-                {
-                    ent.SetData(PlcMemory.DM, 404, count);
-                    return Task.FromResult<object>(true);
-                }
-
-                ent.SetData(PlcMemory.DM, 406, count);
-                return Task.FromResult<object>(true);
+                ent.SetData(PlcMemory.DM, 404, index);
+                ent.SetData(PlcMemory.DM, 405, count);
+                return true;
             }
             catch
             {
-                return Task.FromResult<object>(false);
+                return false;
             }
         }
 
